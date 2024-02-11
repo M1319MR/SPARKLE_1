@@ -8,7 +8,58 @@ from rdkit.Chem import Draw
 import pandas as pd
 import numpy as np
 import base64
-import SASA as score
+
+from collections import defaultdict
+from scscore-master.scscore import standalone_model_numpy as smn
+from rdkit import Chem
+
+scscore = smn.SCScorer()
+scscore.restore()
+
+def calculate_scs_plus_unique_atoms_ta(smi):
+    m = Chem.MolFromSmiles(smi)
+    if m:
+        num_of_atoms = set()
+        num_of_atoms = m.GetNumAtoms()
+        scs = set()
+        scs = scscore.get_score_from_smi(smi)[1]
+
+        equivs = defaultdict(set)
+        matches = m.GetSubstructMatches(m, uniquify=False)
+        for match in matches:
+            for idx1, idx2 in enumerate(match):
+                equivs[idx1].add(idx2)
+        classes = set()
+        for s in equivs.values():
+            classes.add(tuple(s))
+        # Remove duplicates by sorting each tuple
+        unique_data = set(tuple(sorted(item)) for item in classes)
+
+        # Convert back to the original format
+        result = set(tuple(sorted(item, reverse=True)) for item in unique_data)
+        count_sets = sum(1 for item in result if len(item) > 1)
+        count_single = sum(1 for item in result if len(item) == 1)
+
+        # Calculate SCS+Unique atoms/TA
+        scs_plus_unique_atoms_ta = (num_of_atoms/(scs+count_single))#((scs + count_single) / num_of_atoms) if num_of_atoms > 0 else 0
+        return smi, scs_plus_unique_atoms_ta
+    else:
+        print(f"Invalid SMILES: {smi}")
+        return None
+
+def calculate_scores_for_list(smiles_list):
+    return [calculate_scs_plus_unique_atoms_ta(smi)[1] for smi in smiles_list]
+
+def calculate_scores(input_data):
+    if isinstance(input_data, str):
+        return calculate_scs_plus_unique_atoms_ta(input_data)
+    elif isinstance(input_data, list):
+        return calculate_scores_for_list(input_data)
+    else:
+        raise ValueError("Input data must be either a single SMILES string or a list of SMILES strings.")
+
+
+
 
 #Checking valididy of string
 def contains_only_numbers(string):
@@ -33,7 +84,7 @@ def process_input(input_data, desc_list):
 		result_specific_energy = round(result,4)
 		result1 = -0.0008272568654 *((desc['ATS1Z']/desc['GATS2d'])*(desc['MID_N']+desc['GATS3p'])) -0.09311602313
 		result_solvation_energy = round(result1,4)
-		synthesis_score = score.calculate_scores(input_data)
+		synthesis_score = calculate_scores(input_data)
 		processed_data = "Specific Energy of molecule: " + str(result_specific_energy) + " and Solvation Energy of molecule: " + 				str(result_solvation_energy) + " and Synthesis Accessibility Score:" + str(synthesis_score[1])
 		
 		return processed_data
@@ -55,7 +106,7 @@ def Mordred_descriptors(data,desc_list):
 #Process the file uploaded
 def process_file(uploaded_file):
 	df =pd.read_csv(uploaded_file)
-	synthesis_score = score.calculate_scores(df.iloc[:,0].tolist())
+	synthesis_score = calculate_scores(df.iloc[:,0].tolist())
 	df['SASA'] = synthesis_score
 	desc = Mordred_descriptors(df.iloc[:,0],desc_list)
 	st.write("NOTE: If you see the difference in number of molecules submitted with the molecules in downloaded file, that is because we removed molecules for which we encountered errors in descriptors calculation.")

@@ -47,16 +47,4 @@ def calculate_scores(input_data):
     else:
         raise ValueError("Input data must be either a single SMILES string or a list of SMILES strings.")
 
-'''
 
-# Example usage:
-single_smiles = "CCO"
-smiles_list = ["CCO", "CC", "C=C"]
-result_single = calculate_scores(single_smiles)
-result_list = calculate_scores(smiles_list)
-
-print("Result for single SMILES:")
-print(result_single[1])
-print("Result for list of SMILES:")
-print(result_list)
-'''
