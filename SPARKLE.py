@@ -10,7 +10,7 @@ import numpy as np
 import base64
 
 from collections import defaultdict
-from scscore-master.scscore import standalone_model_numpy as smn
+from scscore.scscore import standalone_model_numpy as smn
 from rdkit import Chem
 
 scscore = smn.SCScorer()
