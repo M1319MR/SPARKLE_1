@@ -1,0 +1,7 @@
+six==1.*
+numpy==1.*
+networkx==2.*
+
+[full]
+pandas
+tqdm
