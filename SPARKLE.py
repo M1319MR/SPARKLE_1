@@ -134,7 +134,7 @@ with col1:
 			mol = Chem.MolFromSmiles(input_data)
 			if mol is not None:
 				specific, solvation, score = process_input(input_data, desc_list)
-				st.write("Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery (Wh/kg) : ", specific, " \n", "Predicted solvation energy of the molecule in an aqueous environment (Kcal/mol) : " , result_solvation_energy, " \n", "Symmetry-Adapted Synthetic Accessibility (SASA) score: ", synthesis_score)
+				st.write("Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery (Wh/kg) : ", specific, " \n", "Predicted solvation energy of the molecule in an aqueous environment (Kcal/mol) : " , solvation, " \n", "Symmetry-Adapted Synthetic Accessibility (SASA) score: ", score)
 			else:
 				st.write('Wrong representation of molecule in SMILE format!!, unable to make a molecule representation using rdkit package')
 		else:
