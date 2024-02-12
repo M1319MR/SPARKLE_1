@@ -85,9 +85,9 @@ def process_input(input_data, desc_list):
 		result1 = -0.0008272568654 *((desc['ATS1Z']/desc['GATS2d'])*(desc['MID_N']+desc['GATS3p'])) -0.09311602313
 		result_solvation_energy = round(result1,4)
 		synthesis_score = calculate_scores(input_data)
-		processed_data = "Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery: " + str(result_specific_energy) + " Wh/kg<br>"+ "Predicted solvation energy of the molecule in an aqueous environment: " + str(result_solvation_energy) + " Kcal/mol<br>" +"Symmetry-Adapted Synthetic Accessibility (SASA) score: " + str(synthesis_score[1])
+		processed_data = "Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery: " + str(result_specific_energy) + " Wh/kg"+ "Predicted solvation energy of the molecule in an aqueous environment: " + str(result_solvation_energy) + " Kcal/mol" +"Symmetry-Adapted Synthetic Accessibility (SASA) score: " + str(synthesis_score[1])
 		
-		return processed_data
+		return result_specific_energy, result_solvation_energy, synthesis_score[1]
 	except Exception as e:
 		return "Error occured during calculating descriptors value which resulted in NaN or string values. Please refer to Mordred descriptors documentation."
 
@@ -133,8 +133,8 @@ with col1:
 		if input_data != "" and contains_only_numbers(input_data) == False:
 			mol = Chem.MolFromSmiles(input_data)
 			if mol is not None:
-				processed_data = process_input(input_data, desc_list)
-				st.write(processed_data)
+				specific, solvation, score = process_input(input_data, desc_list)
+				st.write("Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery (Wh/kg) : ", specific, " \n", "Predicted solvation energy of the molecule in an aqueous environment (Kcal/mol) : " , result_solvation_energy, " \n", "Symmetry-Adapted Synthetic Accessibility (SASA) score: ", synthesis_score)
 			else:
 				st.write('Wrong representation of molecule in SMILE format!!, unable to make a molecule representation using rdkit package')
 		else:
