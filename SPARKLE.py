@@ -85,7 +85,7 @@ def process_input(input_data, desc_list):
 		result1 = -0.0008272568654 *((desc['ATS1Z']/desc['GATS2d'])*(desc['MID_N']+desc['GATS3p'])) -0.09311602313
 		result_solvation_energy = round(result1,4)
 		synthesis_score = calculate_scores(input_data)
-		processed_data = "Specific Energy of molecule: " + str(result_specific_energy) + "Wh/kg"+ " and Solvation Energy of molecule: " + str(result_solvation_energy) + "Kcal/mol" +" and Synthesis Accessibility Score:" + str(synthesis_score[1])
+		processed_data = "Specific Energy of molecule: " + str(result_specific_energy) + " Wh/kg"+ " and Solvation Energy of molecule: " + str(result_solvation_energy) + " Kcal/mol" +" and Synthesis Accessibility Score:" + str(synthesis_score[1])
 		
 		return processed_data
 	except Exception as e:
