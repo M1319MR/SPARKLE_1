@@ -78,9 +78,10 @@ desc_list = [descriptors.Autocorrelation.ATS(1,'Z'),
 def process_input(input_data, desc_list):
 	calc = Calculator(desc_list)
 	mols = Chem.MolFromSmiles(input_data)
+	MW = Chem.rdMolDescriptors.CalcExactMolWt(mols)
 	desc = calc(mols)
 	try:
-		result = 1717.161781 * (desc['VR2_Dzare'] / (desc['VR2_Dzp'] * (desc['ATS1Z'] + desc['ATS2Z']))) + 0.02741337642
+		result = ((1717.161781 * (desc['VR2_Dzare'] / (desc['VR2_Dzp'] * (desc['ATS1Z'] + desc['ATS2Z']))) + 0.02741337642) - (2.29*96.485*2/(3.6*MW)))*1000
 		result_specific_energy = round(result,4)
 		result1 = -0.0008272568654 *((desc['ATS1Z']/desc['GATS2d'])*(desc['MID_N']+desc['GATS3p'])) -0.09311602313
 		result_solvation_energy = round(result1,4)
@@ -111,9 +112,16 @@ def process_file(uploaded_file):
 	desc = Mordred_descriptors(df.iloc[:,0],desc_list)
 	st.write("NOTE: If you see the difference in number of molecules submitted with the molecules in downloaded file, that is because we removed molecules for which we encountered errors in descriptors calculation.")
 	Specific_Energy = 1717.161781 * (desc['VR2_Dzare'] / (desc['VR2_Dzp'] * (desc['ATS1Z'] + desc['ATS2Z']))) + 0.02741337642
-	df['Specific Energy'] = Specific_Energy
+	#df['Specific Energy'] = Specific_Energy
+	SE_list =[]
+	for i in range(len(Specific_Energy)):
+		mol = Chem.MolFromSmiles(df.iloc[:,0][i])
+		MW = Chem.rdMolDescriptors.CalcExactMolWt(mol)
+		SE = ((Specific_Energy[i]) - (2.29*96.485*2/(3.6*MW)))*1000
+		SE_list.append(SE)
+	df['Specifc Energy (Wh/Kg)'] = SE_list
 	Solvation_Energy = -0.0008272568654 *((desc['ATS1Z']/desc['GATS2d'])*(desc['MID_N']+desc['GATS3p'])) -0.09311602313
-	df['Solvation Energy']=Solvation_Energy
+	df['Solvation Energy (ev)']=Solvation_Energy
 	# Provide a downloadable link to the modified CSV file
 	csv_file = df.to_csv(index=False)
 	b64 = base64.b64encode(csv_file.encode()).decode()
@@ -134,7 +142,7 @@ with col1:
 			mol = Chem.MolFromSmiles(input_data)
 			if mol is not None:
 				specific, solvation, score = process_input(input_data, desc_list)
-				st.write("Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery (Wh/kg) : ", specific, " \n", " \n", "Predicted solvation energy of the molecule in an aqueous environment (Kcal/mol) : " , solvation, " \n", " \n", "Symmetry-Adapted Synthetic Accessibility (SASA) score: ", score," \n")
+				st.write("Predicted specific energy of the molecule as cathode in aqueous zinc-ion battery (Wh/kg) : ", specific, " \n", " \n", "Predicted solvation energy of the molecule in an aqueous environment (ev) : " , solvation, " \n", " \n", "Symmetry-Adapted Synthetic Accessibility (SASA) score: ", score," \n")
 				st.write("NOTE: If a molecule SASA score >= 2.5 - easy to synthesize and < 2.5 indicates difficult to synthesize") 
 			else:
 				st.write('Wrong representation of molecule in SMILE format!!, unable to make a molecule representation using rdkit package')
